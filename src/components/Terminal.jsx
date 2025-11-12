@@ -172,7 +172,8 @@ const CodeHeistTerminal = () => {
       socketRef.current = null
     }
 
-    const wsUrl = 'ws://localhost:8080/ws'
+    // LANGSUNG CONNECT KE API YANG SUDAH DEPLOY
+    const wsUrl = 'wss://api-codeheist.abelhamuda.my.id/ws'
     
     try {
       const ws = new WebSocket(wsUrl)
@@ -184,7 +185,7 @@ const CodeHeistTerminal = () => {
           return
         }
         
-        console.log('✅ WebSocket connected')
+        console.log('✅ WebSocket connected to production API')
         setIsConnected(true)
         
         // Setup terminal input handling after connection
@@ -241,7 +242,7 @@ const CodeHeistTerminal = () => {
     } catch (e) {
       console.error('Failed to create WebSocket:', e)
       if (isMountedRef.current && term && !term._disposed) {
-        term.write('\r\n\x1b[31m● FAILED TO CONNECT\x1b[0m\r\n')
+        term.write('\r\n\x1b[31m● FAILED TO CONNECT TO SERVER\x1b[0m\r\n')
       }
     }
   }
@@ -384,7 +385,7 @@ const CodeHeistTerminal = () => {
           <div className="w-3 h-3 bg-green-500 rounded-full"></div>
         </div>
         <div className="ml-4 text-sm text-hacker-green">
-          {isConnected ? '● CONNECTED' : '● CONNECTING...'} | CODEHEIST TERMINAL
+          {isConnected ? '● CONNECTED TO SERVER' : '● CONNECTING TO PRODUCTION...'} | CODEHEIST TERMINAL
         </div>
       </div>
       <div 
