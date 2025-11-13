@@ -372,7 +372,7 @@ const CodeHeistTerminal = () => {
                 <div className="h-4 w-px bg-gray-600 mx-2"></div>
                 <div className="flex items-center space-x-2">
                   <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-gray-500'} transition-colors duration-300`}></div>
-                  <span className="text-xs font-medium text-gray-300">
+                  <span className="text-xs pl-12 font-medium text-gray-300">
                     {isConnected ? 'CONNECTED' : 'CONNECTING...'}
                   </span>
                 </div>
