@@ -32,23 +32,21 @@ const Header = () => {
         <div className="flex justify-center items-center space-x-4 pt-4">
           {/* CONNECTED */}
           <div className="flex items-center space-x-1">
-            <img src="/dot.png" alt="connected dot" className="w-2 h-2" />
+            <img src="/dot-blue.png" alt="connected dot" className="w-2 h-2" />
             <span className="text-[10px] font-medium text-gray-400 tracking-wider">
               CONNECTED
             </span>
           </div>
 
-          <div className="text-gray-600 text-[10px]">|</div>
 
           {/* ENCRYPTED */}
           <div className="flex items-center space-x-1">
-            <img src="/dot.png" alt="encrypted dot" className="w-2 h-2" />
+            <img src="/dot-red.png" alt="encrypted dot" className="w-2 h-2" />
             <span className="text-[10px] font-medium text-gray-400 tracking-wider">
               ENCRYPTED
             </span>
           </div>
 
-          <div className="text-gray-600 text-[10px]">|</div>
 
           {/* ACTIVE */}
           <div className="flex items-center space-x-1">
