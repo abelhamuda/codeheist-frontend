@@ -20,13 +20,11 @@ const CodeHeistTerminal = () => {
   useEffect(() => {
     isMountedRef.current = true
     
-    // Delay initialization to avoid React Strict Mode double mount issues
     const initTimeout = setTimeout(() => {
       if (!isMountedRef.current || !terminalRef.current) return
       
       console.log('🚀 Initializing terminal...')
       
-      // Initialize terminal first
       const { term, fitAddon } = initializeTerminal()
       if (!term || !fitAddon) {
         console.error('Failed to initialize terminal')
@@ -36,7 +34,6 @@ const CodeHeistTerminal = () => {
       terminalInstanceRef.current = term
       fitAddonRef.current = fitAddon
 
-      // Then connect to WebSocket after a short delay
       setTimeout(() => {
         if (isMountedRef.current) {
           connectWebSocket(term)
@@ -44,7 +41,6 @@ const CodeHeistTerminal = () => {
       }, 100)
     }, 100)
 
-    // Cleanup function
     return () => {
       console.log('🧹 Cleaning up terminal and WebSocket')
       isMountedRef.current = false
@@ -66,7 +62,6 @@ const CodeHeistTerminal = () => {
         resizeHandlerRef.current = null
       }
       
-      // Dispose terminal last
       if (terminalInstanceRef.current) {
         try {
           terminalInstanceRef.current.dispose()
@@ -89,31 +84,31 @@ const CodeHeistTerminal = () => {
     try {
       const term = new Terminal({
         theme: {
-          background: '#0a0a0a',
-          foreground: '#00ff00',
-          cursor: '#00ff00',
-          selection: 'rgba(0, 255, 0, 0.3)',
+          background: '#000000',
+          foreground: '#ffffff',
+          cursor: '#BF1A1A',
+          selection: 'rgba(191, 26, 26, 0.3)',
           black: '#000000',
-          red: '#ff0000',
-          green: '#00ff00',
-          yellow: '#ffff00',
-          blue: '#0000ff',
-          magenta: '#ff00ff',
-          cyan: '#00ffff',
+          red: '#BF1A1A',
+          green: '#10b981',
+          yellow: '#fbbf24',
+          blue: '#3b82f6',
+          magenta: '#a855f7',
+          cyan: '#06b6d4',
           white: '#ffffff',
           brightBlack: '#666666',
-          brightRed: '#ff6666',
-          brightGreen: '#66ff66',
-          brightYellow: '#ffff66',
-          brightBlue: '#6666ff',
-          brightMagenta: '#ff66ff',
-          brightCyan: '#66ffff',
+          brightRed: '#ff4444',
+          brightGreen: '#34d399',
+          brightYellow: '#fde047',
+          brightBlue: '#60a5fa',
+          brightMagenta: '#c084fc',
+          brightCyan: '#22d3ee',
           brightWhite: '#ffffff'
         },
-        fontSize: 14,
+        fontSize: 13,
         fontFamily: '"Monaco", "Menlo", "Ubuntu Mono", "Courier New", monospace',
         cursorBlink: true,
-        allowTransparency: false,
+        allowTransparency: true,
         scrollback: 1000,
         convertEol: true,
         disableStdin: false,
@@ -130,7 +125,6 @@ const CodeHeistTerminal = () => {
       
       term.open(terminalRef.current)
       
-      // Fit after opening with a delay
       setTimeout(() => {
         if (isMountedRef.current && fitAddon) {
           try {
@@ -141,7 +135,6 @@ const CodeHeistTerminal = () => {
         }
       }, 200)
 
-      // Handle window resize
       resizeHandlerRef.current = () => {
         if (isMountedRef.current && fitAddon && terminalInstanceRef.current) {
           try {
@@ -166,13 +159,11 @@ const CodeHeistTerminal = () => {
     
     console.log('🔄 Connecting to WebSocket...')
     
-    // Close existing connection if any
     if (socketRef.current) {
       socketRef.current.close()
       socketRef.current = null
     }
 
-    // LANGSUNG CONNECT KE API YANG SUDAH DEPLOY
     const wsUrl = 'wss://api-codeheist.abelhamuda.my.id/ws'
     
     try {
@@ -188,7 +179,6 @@ const CodeHeistTerminal = () => {
         console.log('✅ WebSocket connected to production API')
         setIsConnected(true)
         
-        // Setup terminal input handling after connection
         setupTerminalInput(term, ws)
       }
 
@@ -213,12 +203,10 @@ const CodeHeistTerminal = () => {
         console.log('🔌 WebSocket closed:', event.code, event.reason)
         setIsConnected(false)
         
-        // Only show message and reconnect if terminal still exists
         if (term && !term._disposed && terminalInstanceRef.current) {
           term.write('\r\n\x1b[31m● DISCONNECTED FROM SERVER\x1b[0m\r\n')
           term.write('\x1b[33mReconnecting in 3 seconds...\x1b[0m\r\n')
           
-          // Clear any existing reconnect timeout
           if (reconnectTimeoutRef.current) {
             clearTimeout(reconnectTimeoutRef.current)
           }
@@ -264,7 +252,6 @@ const CodeHeistTerminal = () => {
         return
       }
 
-      // Enter key (submit command)
       if (data === '\r' || data === '\n') {
         if (currentCommandRef.current.trim()) {
           isProcessingRef.current = true
@@ -289,36 +276,30 @@ const CodeHeistTerminal = () => {
           term.write('\r\n$ ')
         }
       }
-      // Backspace or Delete key
       else if (data === '\x7f' || data === '\b') {
         if (currentCommandRef.current.length > 0) {
           currentCommandRef.current = currentCommandRef.current.slice(0, -1)
           term.write('\b \b')
         }
       }
-      // Ctrl+C - interrupt current command
       else if (data === '\x03') {
         term.write('^C\r\n$ ')
         currentCommandRef.current = ''
         isProcessingRef.current = false
       }
-      // Ctrl+L - clear screen
       else if (data === '\x0c') {
         term.clear()
         term.write('$ ' + currentCommandRef.current)
       }
-      // Arrow keys and other escape sequences - ignore for now
       else if (data.charCodeAt(0) === 27) {
         // Ignore escape sequences
       }
-      // Printable characters (normal input)
       else if (data.length === 1 && data.charCodeAt(0) >= 32 && data.charCodeAt(0) <= 126) {
         currentCommandRef.current += data
         term.write(data)
       }
     })
 
-    // Enable terminal focus
     setTimeout(() => {
       if (isMountedRef.current && term && !term._disposed) {
         term.focus()
@@ -358,7 +339,6 @@ const CodeHeistTerminal = () => {
           }
       }
 
-      // Ensure terminal stays focused
       setTimeout(() => {
         if (isMountedRef.current && term && !term._disposed) {
           term.focus()
@@ -369,7 +349,6 @@ const CodeHeistTerminal = () => {
     }
   }
 
-  // Handle container click to focus terminal
   const handleTerminalClick = () => {
     if (isMountedRef.current && terminalInstanceRef.current) {
       terminalInstanceRef.current.focus()
@@ -377,30 +356,166 @@ const CodeHeistTerminal = () => {
   }
 
   return (
-    <div className="mt-8 terminal-glow rounded-lg border border-hacker-green/50 bg-hacker-darker/80 backdrop-blur-sm">
-      <div className="flex items-center px-4 py-2 border-b border-hacker-green/30">
-        <div className="flex space-x-2">
-          <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-          <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-        </div>
-        <div className="ml-4 text-sm text-hacker-green">
-          {isConnected ? '● CONNECTED TO SERVER' : '● CONNECTING TO PRODUCTION...'} | CODEHEIST TERMINAL
+    <div className="flex-1 flex items-center justify-center p-6">
+      <div className="flex justify-center w-full">
+        {/* Floating macOS Terminal */}
+        <div className="terminal-float justify-center transform hover:scale-[1.02] hover:shadow-2xl transition-all duration-500 w-1/2">
+          {/* macOS Traffic Lights */}
+          <div className="terminal-header bg-gradient-to-b from-gray-900 to-gray-800 border-b border-gray-700 rounded-t-2xl px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="flex space-x-2">
+                  <div className="w-3 h-3 rounded-full bg-gradient-to-br from-red-400 to-red-600 shadow-inner hover:scale-110 transition-transform cursor-pointer"></div>
+                  <div className="w-3 h-3 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 shadow-inner hover:scale-110 transition-transform cursor-pointer"></div>
+                  <div className="w-3 h-3 rounded-full bg-gradient-to-br from-green-400 to-green-600 shadow-inner hover:scale-110 transition-transform cursor-pointer"></div>
+                </div>
+                <div className="h-4 w-px bg-gray-600 mx-2"></div>
+                <div className="flex items-center space-x-2">
+                  <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-gray-500'} transition-colors duration-300`}></div>
+                  <span className="text-xs font-medium text-gray-300">
+                    {isConnected ? 'CONNECTED' : 'CONNECTING...'}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="flex-1 text-center">
+                <div className="bg-black/40 rounded-xl px-4 py-2 inline-block border border-gray-700/50 backdrop-blur-sm">
+                  <span className="text-sm font-semibold text-gray-200 tracking-wide">
+                    codeheist@terminal ~
+                  </span>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-3 opacity-60">
+                <div className="text-xs font-mono text-gray-400 bg-black/30 px-2 py-1 rounded border border-gray-700/30">
+                  v2.0
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Terminal Content */}
+          <div 
+            ref={terminalRef} 
+            className="w-full h-[300px] bg-gradient-to-br from-black via-gray-900 to-black cursor-text border-x border-gray-700/50"
+            onClick={handleTerminalClick}
+            style={{ 
+              minHeight: '400px',
+              overflow: 'hidden'
+            }}
+          />
+
+          {/* Status Bar */}
+          <div className="bg-gradient-to-b from-gray-800 to-gray-900 border-t border-gray-700 rounded-b-2xl px-6 py-3">
+            <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center space-x-4 font-mono">
+                <span className="text-gray-400">SESSION:</span>
+                <span className="text-red-300 font-semibold bg-black/30 px-2 py-1 rounded border border-gray-700/30">
+                  {sessionId ? sessionId.substring(0, 8) : '••••••••'}
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse"></div>
+                <span className="text-gray-400 font-mono bg-black/30 px-2 py-1 rounded border border-gray-700/30">
+                  SECURE TERMINAL
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Floating Glow Effect */}
+          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-red-500/10 via-transparent to-blue-500/10 blur-xl -z-10 opacity-60 pointer-events-none"></div>
         </div>
       </div>
-      <div 
-        ref={terminalRef} 
-        className="w-full h-96 md:h-[500px] p-4 cursor-text"
-        onClick={handleTerminalClick}
-        style={{ 
-          minHeight: '400px',
-          overflow: 'hidden'
-        }}
-      />
-      <div className="px-4 py-2 border-t border-hacker-green/30 text-xs text-hacker-green/70 flex justify-between">
-        <span>SESSION: {sessionId || 'ESTABLISHING...'}</span>
-        <span>MODE: SECURE TERMINAL</span>
-      </div>
+      
+      <style jsx>{`
+        .terminal-float {
+          border-radius: 20px;
+          background: linear-gradient(145deg, 
+            rgba(25, 25, 25, 0.95) 0%,
+            rgba(15, 15, 15, 0.98) 50%,
+            rgba(25, 25, 25, 0.95) 100%);
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          backdrop-filter: blur(30px);
+          box-shadow: 
+            0 0 0 1px rgba(255, 255, 255, 0.1),
+            0 25px 60px -20px rgba(0, 0, 0, 0.8),
+            0 20px 40px -20px rgba(191, 26, 26, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2),
+            inset 0 -1px 0 rgba(0, 0, 0, 0.8);
+          position: relative;
+          overflow: hidden;
+          animation: float 6s ease-in-out infinite;
+        }
+
+        .terminal-float::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          border-radius: 20px;
+          padding: 2px;
+          background: linear-gradient(135deg, 
+            rgba(255, 255, 255, 0.2) 0%,
+            rgba(255, 255, 255, 0.05) 50%,
+            rgba(255, 255, 255, 0.1) 100%);
+          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor;
+          mask-composite: exclude;
+          pointer-events: none;
+        }
+
+        @keyframes float {
+          0%, 100% {
+            transform: translateY(0px) scale(1);
+            box-shadow: 
+              0 0 0 1px rgba(255, 255, 255, 0.1),
+              0 25px 60px -20px rgba(0, 0, 0, 0.8),
+              0 20px 40px -20px rgba(191, 26, 26, 0.4);
+          }
+          50% {
+            transform: translateY(-8px) scale(1.01);
+            box-shadow: 
+              0 0 0 1px rgba(255, 255, 255, 0.15),
+              0 35px 80px -25px rgba(0, 0, 0, 0.9),
+              0 30px 60px -25px rgba(191, 26, 26, 0.5);
+          }
+        }
+
+        .terminal-header {
+          user-select: none;
+          -webkit-user-select: none;
+          background: linear-gradient(135deg, 
+            rgba(40, 40, 40, 0.95) 0%,
+            rgba(30, 30, 30, 0.98) 100%) !important;
+        }
+
+        /* Custom scrollbar for terminal */
+        :global(.xterm-viewport) {
+          scrollbar-width: thin;
+          scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+        }
+
+        :global(.xterm-viewport::-webkit-scrollbar) {
+          width: 8px;
+        }
+
+        :global(.xterm-viewport::-webkit-scrollbar-track) {
+          background: transparent;
+        }
+
+        :global(.xterm-viewport::-webkit-scrollbar-thumb) {
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: 4px;
+          border: 2px solid transparent;
+          background-clip: padding-box;
+        }
+
+        :global(.xterm-viewport::-webkit-scrollbar-thumb:hover) {
+          background: rgba(255, 255, 255, 0.3);
+          border: 1px solid transparent;
+          background-clip: padding-box;
+        }
+      `}</style>
     </div>
   )
 }
